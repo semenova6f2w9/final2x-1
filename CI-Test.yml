@@ -1,0 +1,43 @@
+name: CI-Test
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - README.md
+      - LICENSE
+  pull_request:
+    paths-ignore:
+      - README.md
+      - LICENSE
+  workflow_dispatch:
+
+jobs:
+  ubuntu:
+    strategy:
+      matrix:
+        os-version: [ "x64" ]
+
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Test
+        run: |
+          npm install
+          npm run lint
+          npm run test-cov
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - name: Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
